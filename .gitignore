@@ -1,0 +1,8 @@
+.env
+.venv/
+.conda/
+.vscode/
+__pycache__/
+*.pyc
+scratch/
+auth.db
