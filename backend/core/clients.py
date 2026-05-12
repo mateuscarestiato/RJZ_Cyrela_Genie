@@ -61,11 +61,16 @@ class GenieApiClient:
     def get_space(self, space_id: str) -> Dict[str, Any]:
         return self._request("GET", f"/api/2.0/genie/spaces/{space_id}")
 
-    def create_space(self, title: str, warehouse_id: str, description: str = "") -> Dict[str, Any]:
+    def create_space(self, title: str, warehouse_id: str, description: str = "", serialized_space: Optional[str] = None) -> Dict[str, Any]:
+        if serialized_space is None:
+            # Default empty serialized space as required by Databricks API
+            serialized_space = json.dumps({"version": 2, "data_sources": {"tables": []}})
+            
         payload = {
             "title": title,
             "warehouse_id": warehouse_id,
-            "description": description
+            "description": description,
+            "serialized_space": serialized_space
         }
         return self._request("POST", "/api/2.0/genie/spaces", payload=payload)
 
@@ -115,7 +120,15 @@ class GenieApiClient:
 
 def format_sql(sql: str) -> str:
     try:
-        return sqlparse.format(sql, reindent=True, keyword_case='upper')
+        # Indented and upper-case keywords for better readability
+        return sqlparse.format(
+            sql, 
+            reindent=True, 
+            indent_width=4,
+            keyword_case='upper', 
+            strip_comments=False,
+            use_space_around_operators=True
+        )
     except Exception:
         return sql
 

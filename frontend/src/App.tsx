@@ -5,9 +5,12 @@ import Dashboard from './components/Dashboard';
 import './index.css';
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    setIsAuthenticated(isLoggedIn);
+  }, []);
 
   const [user, setUser] = useState<any>(() => {
     const saved = localStorage.getItem('user');
@@ -28,12 +31,16 @@ const App: React.FC = () => {
     localStorage.removeItem('user');
   };
 
+  if (isAuthenticated === null) {
+    return <div className="h-screen w-screen flex items-center justify-center bg-slate-900 text-white">Carregando...</div>;
+  }
+
   return (
     <Router>
       <Routes>
         <Route 
           path="/login" 
-          element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} 
+          element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/spaces" />} 
         />
         <Route 
           path="/login/callback" 

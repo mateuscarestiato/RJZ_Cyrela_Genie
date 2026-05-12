@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Save, Search, Warehouse, Terminal } from 'lucide-react';
+import { Plus, Edit2, Save, Search, Warehouse, Terminal, Zap } from 'lucide-react';
 
 interface Space {
   id: string;
@@ -14,14 +14,14 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentSpace, setCurrentSpace] = useState<Partial<Space>>({ title: '', warehouse_id: '', description: '' });
+  const [currentSpace, setCurrentSpace] = useState<Partial<Space>>({ title: '', description: '' });
   const [search, setSearch] = useState('');
 
   const fetchSpaces = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`);
-      setSpaces(res.data);
+      setSpaces(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -31,6 +31,8 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
 
   useEffect(() => {
     fetchSpaces();
+    const interval = setInterval(fetchSpaces, 5000); // Polling cada 5 segundos
+    return () => clearInterval(interval);
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -43,7 +45,7 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
         await axios.post(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`, currentSpace);
       }
       setIsEditing(false);
-      setCurrentSpace({ title: '', warehouse_id: '', description: '' });
+      setCurrentSpace({ title: '', description: '' });
       fetchSpaces();
     } catch (err) {
       alert("Erro ao salvar o Genie Space.");
@@ -92,20 +94,6 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Warehouse ID (SQL)</label>
-                <div className="relative">
-                  <Warehouse className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <input 
-                    type="text" 
-                    value={currentSpace.warehouse_id} 
-                    onChange={e => setCurrentSpace({...currentSpace, warehouse_id: e.target.value})}
-                    className="input-field pl-10"
-                    placeholder="ab0de84dfac..."
-                    required
-                  />
-                </div>
-              </div>
-              <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Descrição</label>
                 <textarea 
                   value={currentSpace.description} 
@@ -122,7 +110,7 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
                 {isEditing && (
                   <button 
                     type="button" 
-                    onClick={() => { setIsEditing(false); setCurrentSpace({title:'', warehouse_id:'', description:''}); }}
+                    onClick={() => { setIsEditing(false); setCurrentSpace({title:'', description:''}); }}
                     className="px-4 py-2 text-slate-500 hover:text-slate-800 transition text-sm font-medium"
                   >
                     Cancelar
@@ -136,19 +124,28 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
         {/* Lista */}
         <div className="lg:col-span-2">
           <div className="glass card min-h-[600px]">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-              <h2 className="text-xl font-bold">Ambientes Existentes</h2>
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Buscar spaces..." 
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="input-field pl-10 py-2 text-sm"
-                />
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xl font-bold">Ambientes Existentes</h2>
+                  <button 
+                    onClick={fetchSpaces} 
+                    className={`p-2 rounded-lg hover:bg-slate-100 transition-all ${loading ? 'animate-spin' : ''}`}
+                    title="Atualizar lista"
+                  >
+                    <Zap className="h-4 w-4 text-orange-500" />
+                  </button>
+                </div>
+                <div className="relative w-full md:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar spaces..." 
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="input-field pl-10 py-2 text-sm"
+                  />
+                </div>
               </div>
-            </div>
 
             {loading && spaces.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">

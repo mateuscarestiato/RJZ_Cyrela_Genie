@@ -12,6 +12,11 @@ interface Message {
   datasets?: any[];
 }
 
+interface Space {
+  id: string;
+  title: string;
+}
+
 const Chat: React.FC<{ user: any }> = ({ user }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = sessionStorage.getItem('chat_messages');
@@ -21,7 +26,27 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(() => sessionStorage.getItem('conv_id'));
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [selectedSpaceId, setSelectedSpaceId] = useState<string>(() => sessionStorage.getItem('selected_space_id') || '');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const fetchSpaces = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`);
+      setSpaces(res.data);
+      if (!selectedSpaceId && res.data.length > 0) {
+        setSelectedSpaceId(res.data[0].id);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar spaces no chat", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSpaces();
+    const interval = setInterval(fetchSpaces, 10000); // Atualiza a cada 10s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -29,7 +54,8 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
     }
     sessionStorage.setItem('chat_messages', JSON.stringify(messages));
     if (conversationId) sessionStorage.setItem('conv_id', conversationId);
-  }, [messages, conversationId]);
+    if (selectedSpaceId) sessionStorage.setItem('selected_space_id', selectedSpaceId);
+  }, [messages, conversationId, selectedSpaceId]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +69,8 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
     try {
       const response = await axios.post(`http://localhost:8000/api/genie/chat?email=${user.user.email}`, {
         content: input,
-        conversation_id: conversationId
+        conversation_id: conversationId,
+        space_id: selectedSpaceId
       });
 
       const { conversation_id, message } = response.data;
@@ -77,9 +104,29 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in">
-      <header className="mb-6">
-        <h1 className="text-4xl font-extrabold text-slate-900 font-outfit mb-2">Genie Chat</h1>
-        <p className="text-slate-500">Pergunte qualquer coisa sobre os dados da RJZ Cyrela</p>
+      <header className="mb-6 flex justify-between items-end">
+        <div>
+          <h1 className="text-4xl font-extrabold text-slate-900 font-outfit mb-2">Genie Chat</h1>
+          <p className="text-slate-500">Pergunte qualquer coisa sobre os dados da RJZ Cyrela</p>
+        </div>
+        <div className="w-64">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Selecionar Ambiente</label>
+          <select 
+            value={selectedSpaceId}
+            onChange={(e) => {
+              setSelectedSpaceId(e.target.value);
+              setConversationId(null);
+              setMessages([]);
+              sessionStorage.removeItem('conv_id');
+              sessionStorage.removeItem('chat_messages');
+            }}
+            className="input-field py-2 text-sm bg-white cursor-pointer"
+          >
+            {spaces.map(s => (
+              <option key={s.id} value={s.id}>{s.title}</option>
+            ))}
+          </select>
+        </div>
       </header>
 
       <div className="flex-1 glass rounded-3xl p-6 overflow-hidden flex flex-col border border-slate-200">

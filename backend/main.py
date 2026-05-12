@@ -28,6 +28,9 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5174")
 
 app = FastAPI(title="Genie RJZ Cyrela API")
 
+# Configurações fixas
+FIXED_WAREHOUSE_ID = "ab0de84dfac97072"
+
 # CORS configuration for local dev
 app.add_middleware(
     CORSMiddleware,
@@ -64,12 +67,10 @@ class ConfigUpdate(BaseModel):
 
 class SpaceCreate(BaseModel):
     title: str
-    warehouse_id: str
     description: Optional[str] = ""
 
 class SpaceUpdate(BaseModel):
     title: Optional[str] = None
-    warehouse_id: Optional[str] = None
     description: Optional[str] = None
 
 class ChatRequest(BaseModel):
@@ -187,21 +188,27 @@ async def list_spaces(email: str):
     tokens = get_user_tokens(email)
     client = GenieApiClient(tokens["host"], tokens["token"])
     try:
-        return client.list_spaces()
+        res = client.list_spaces()
+        if isinstance(res, list):
+            return res
+        return res.get("spaces", [])
     except Exception as e:
+        print(f"DEBUG: Error listing spaces for {email}: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/genie/spaces")
 async def create_space(email: str, req: SpaceCreate):
     tokens = get_user_tokens(email)
     client = GenieApiClient(tokens["host"], tokens["token"])
-    return client.create_space(req.title, req.warehouse_id, req.description)
+    return client.create_space(req.title, FIXED_WAREHOUSE_ID, req.description)
 
 @app.patch("/api/genie/spaces/{space_id}")
 async def update_space(email: str, space_id: str, req: SpaceUpdate):
     tokens = get_user_tokens(email)
     client = GenieApiClient(tokens["host"], tokens["token"])
-    return client.update_space(space_id, req.title, req.warehouse_id, req.description)
+    return client.update_space(space_id, req.title, FIXED_WAREHOUSE_ID, req.description)
 
 @app.post("/api/genie/chat")
 async def chat(email: str, req: ChatRequest):
@@ -241,6 +248,15 @@ def final_message_processor(msg: Dict[str, Any]) -> Dict[str, Any]:
             query_obj = att["query"]
             if "query" in query_obj:
                 query_obj["query"] = format_sql(query_obj["query"])
+        
+        # Also try to find SQL in text content (markdown blocks)
+        if "text" in att:
+            text_obj = att["text"]
+            if "content" in text_obj:
+                # We don't want to mess up the whole markdown, but we could 
+                # potentially format code blocks here if we wanted to be fancy.
+                # For now, focus on the query object which is what the user usually wants.
+                pass
     return msg
 
 @app.post("/api/devops/pr")
