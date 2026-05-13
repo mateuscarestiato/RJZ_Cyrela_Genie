@@ -42,18 +42,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     { icon: Target, text: "Conversor CRM", path: "/crm", color: "#4f46e5" },
   ];
 
+  console.log("Dashboard Render - User:", !!user);
+  
+  if (!user || !user.user) {
+    console.warn("Dashboard: User data missing, showing loading state");
+    return <div className="h-screen w-screen flex items-center justify-center bg-slate-900 text-white">Carregando dados do usuário...</div>;
+  }
+
+  const userEmail = user?.user?.email || 'Usuário';
+  const initial = userEmail?.charAt(0).toUpperCase() || '?';
+
   return (
     <div className="app-container">
       <aside className="sidebar">
-        <div className="flex flex-col items-center mb-12 px-2">
-          <div className="bg-slate-900 px-6 py-4 rounded-[1.5rem] mb-4 shadow-2xl shadow-slate-200 border border-slate-800">
+        <div className="flex flex-col items-center mb-16 px-2">
+          <div className="bg-slate-900 p-5 rounded-[2rem] mb-6 shadow-2xl shadow-slate-200 border border-slate-800 transform hover:scale-105 transition-transform duration-500">
             <img 
               src="/assets/logo_rjzcyrela_branco.png" 
               alt="Cyrela" 
               className="h-7 w-auto object-contain"
             />
           </div>
-          <h2 className="text-[10px] font-extrabold font-outfit text-slate-400 uppercase tracking-[0.2em]">Genie Developer Port</h2>
+          <div className="text-center">
+            <h2 className="text-[11px] font-black font-outfit text-slate-800 uppercase tracking-[0.25em] mb-1">Genie Portal</h2>
+            <div className="h-0.5 w-8 bg-orange-500 mx-auto rounded-full"></div>
+          </div>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -84,10 +97,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           
           <div className="mt-8 p-4 bg-slate-50/80 rounded-[1.75rem] border border-slate-100 flex items-center gap-3 shadow-inner">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-100 shrink-0">
-              <span className="font-bold text-sm">{user.user.email.charAt(0).toUpperCase()}</span>
+              <span className="font-bold text-sm">{initial}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-bold text-slate-800 break-all leading-tight mb-0.5">{user.user.email}</p>
+              <p className="text-[11px] font-bold text-slate-800 break-all leading-tight mb-0.5">{userEmail}</p>
               <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                 <span className="h-1 w-1 bg-green-500 rounded-full animate-pulse"></span>
                 Developer

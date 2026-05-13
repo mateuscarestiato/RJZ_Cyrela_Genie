@@ -16,7 +16,8 @@ const LegacyMapper: React.FC<{ user: any }> = ({ user }) => {
     const columns = inputText.split(/[,\n]/).map(c => c.trim()).filter(c => c !== '');
     
     try {
-      const response = await axios.post(`http://localhost:8000/api/tools/mapper?email=${user.user.email}`, {
+      const userEmail = user?.user?.email || '';
+      const response = await axios.post(`http://localhost:8000/api/tools/mapper?email=${userEmail}`, {
         columns,
         target_table: targetTable
       });

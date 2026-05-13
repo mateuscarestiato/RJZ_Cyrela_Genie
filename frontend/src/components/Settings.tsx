@@ -57,12 +57,12 @@ const Settings: React.FC<{ user: any }> = ({ user }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-                    <input type="text" value={user.user.email} disabled className="input-field bg-slate-50 opacity-70 cursor-not-allowed" />
+                  <div>
+                    <label className="label-premium">E-mail Corporativo</label>
+                    <input type="text" value={user?.user?.email || ''} disabled className="input-field bg-slate-50 opacity-70 cursor-not-allowed" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Nome de Exibição</label>
+                  <div>
+                    <label className="label-premium">Nome de Exibição</label>
                     <input type="text" placeholder="Ex: Mateus Carestiato" className="input-field" />
                   </div>
                 </div>
@@ -82,12 +82,12 @@ const Settings: React.FC<{ user: any }> = ({ user }) => {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Databricks Host</label>
+                  <div>
+                    <label className="label-premium">Databricks Host</label>
                     <input type="text" placeholder="https://adb-xxxx.azuredatabricks.net" className="input-field font-mono text-sm" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">Personal Access Token (PAT)</label>
+                  <div>
+                    <label className="label-premium">Personal Access Token (PAT)</label>
                     <input type="password" placeholder="dapi****************" className="input-field font-mono text-sm" />
                   </div>
                 </div>
@@ -107,17 +107,17 @@ const Settings: React.FC<{ user: any }> = ({ user }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">ADO Organization</label>
+                  <div>
+                    <label className="label-premium">ADO Organization</label>
                     <input type="text" placeholder="cyrela-rjz" className="input-field" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">ADO Project</label>
+                  <div>
+                    <label className="label-premium">ADO Project</label>
                     <input type="text" placeholder="Genie_Data" className="input-field" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">ADO Repository</label>
+                <div>
+                  <label className="label-premium">ADO Repository</label>
                   <input type="text" placeholder="dbt_cyrela" className="input-field" />
                 </div>
               </motion.div>

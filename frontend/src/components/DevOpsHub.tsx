@@ -27,7 +27,8 @@ const DevOpsHub: React.FC<{ user: any }> = ({ user }) => {
     setPrResult(null);
 
     try {
-      const res = await axios.post(`http://localhost:8000/api/devops/pr?email=${user.user.email}`, formData);
+      const userEmail = user?.user?.email || '';
+      const res = await axios.post(`http://localhost:8000/api/devops/pr?email=${userEmail}`, formData);
       setPrResult({ link: res.data.pr_link, id: res.data.pr_id });
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Erro ao processar PR no Azure DevOps.');

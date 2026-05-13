@@ -15,7 +15,8 @@ const DocsGenerator: React.FC<{ user: any }> = ({ user }) => {
     if (!sql.trim() || !alias.trim() || loading) return;
     setLoading(true);
     try {
-      const response = await axios.post(`http://localhost:8000/api/tools/docs-gen?email=${user.user.email}`, {
+      const userEmail = user?.user?.email || '';
+      const response = await axios.post(`http://localhost:8000/api/tools/docs-gen?email=${userEmail}`, {
         sql,
         alias
       });

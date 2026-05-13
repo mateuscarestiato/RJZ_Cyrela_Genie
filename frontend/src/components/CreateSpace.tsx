@@ -20,7 +20,8 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
   const fetchSpaces = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`);
+      const userEmail = user?.user?.email || '';
+      const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${userEmail}`);
       setSpaces(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -31,18 +32,24 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
 
   useEffect(() => {
     fetchSpaces();
-    const interval = setInterval(fetchSpaces, 5000); // Polling cada 5 segundos
+    const interval = setInterval(() => {
+      // Usamos a função de polling de forma segura
+      // Se quisermos evitar sobreposição, podemos checar o estado via Ref se necessário,
+      // mas para simplificar e garantir estabilidade, vamos apenas rodar o fetch.
+      fetchSpaces();
+    }, 10000); // Aumentado para 10s para maior estabilidade
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Dependência vazia para rodar apenas no mount
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const userEmail = user?.user?.email || '';
       if (isEditing && currentSpace.id) {
-        await axios.patch(`http://localhost:8000/api/genie/spaces/${currentSpace.id}?email=${user.user.email}`, currentSpace);
+        await axios.patch(`http://localhost:8000/api/genie/spaces/${currentSpace.id}?email=${userEmail}`, currentSpace);
       } else {
-        await axios.post(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`, currentSpace);
+        await axios.post(`http://localhost:8000/api/genie/spaces?email=${userEmail}`, currentSpace);
       }
       setIsEditing(false);
       setCurrentSpace({ title: '', description: '' });
@@ -59,20 +66,23 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
     setIsEditing(true);
   };
 
-  const filteredSpaces = spaces.filter(s => s.title.toLowerCase().includes(search.toLowerCase()));
+  const filteredSpaces = spaces.filter(s => {
+    if (!s || !s.title) return false;
+    return s.title.toLowerCase().includes(search.toLowerCase());
+  });
 
   return (
-    <div className="space-y-10 animate-slide-up">
-      <header className="flex justify-between items-end">
-        <div>
-          <h1 className="text-5xl font-extrabold text-slate-900 font-outfit mb-3 tracking-tight">Genie Spaces</h1>
-          <p className="text-slate-500 text-lg">Gerencie e configure seus ambientes inteligentes do Databricks</p>
+    <div className="space-y-4 animate-slide-up">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+        <div className="max-w-2xl">
+          <h1 className="text-6xl font-black text-slate-900 font-outfit mb-4 tracking-tighter leading-none">Genie Spaces</h1>
+          <p className="text-slate-500 text-xl font-medium leading-relaxed">Gerencie e configure seus ambientes inteligentes do Databricks de forma centralizada.</p>
         </div>
-        <div className="hidden md:flex gap-4 mb-1">
-          <div className="text-right">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status da Conexão</p>
-            <p className="text-xs font-bold text-emerald-500 flex items-center gap-1 justify-end">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div className="flex gap-4">
+          <div className="text-left md:text-right px-6 py-3 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status da Conexão</p>
+            <p className="text-xs font-bold text-emerald-500 flex items-center gap-2 justify-start md:justify-end">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
               Databricks Ativo
             </p>
           </div>
@@ -99,9 +109,9 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
               </div>
             </div>
             
-            <form onSubmit={handleSave} className="space-y-6">
+            <form onSubmit={handleSave} className="space-y-8">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Título do Space</label>
+                <label className="label-premium">Título do Space</label>
                 <input 
                   type="text" 
                   value={currentSpace.title} 
@@ -112,11 +122,11 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Descrição</label>
+                <label className="label-premium">Descrição</label>
                 <textarea 
                   value={currentSpace.description} 
                   onChange={e => setCurrentSpace({...currentSpace, description: e.target.value})}
-                  className="input-field min-h-[120px] resize-none py-4"
+                  className="input-field min-h-[140px] resize-none py-5"
                   placeholder="Descreva o propósito deste ambiente..."
                 />
               </div>
@@ -153,14 +163,14 @@ const CreateSpace: React.FC<{ user: any }> = ({ user }) => {
                     <Zap className="h-5 w-5" />
                   </button>
                 </div>
-                <div className="relative w-full md:w-80 group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                <div className="relative w-full md:w-96 group">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-orange-500 transition-colors z-10" />
                   <input 
                     type="text" 
                     placeholder="Filtrar por nome..." 
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="input-field pl-12 py-3.5 bg-slate-50/50"
+                    className="input-field !pl-14 py-4 bg-slate-50/50 border-transparent hover:border-slate-200 focus:bg-white"
                   />
                 </div>
               </div>

@@ -55,7 +55,7 @@ const SqlLinter: React.FC<{ user: any }> = ({ user }) => {
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 leading-none mb-1">Input SQL</h3>
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Query Original</span>
+                <label className="label-premium !m-0 !mt-1">Query Original</label>
               </div>
             </div>
             

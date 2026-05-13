@@ -5,17 +5,40 @@ import Dashboard from './components/Dashboard';
 import './index.css';
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [user, setUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(() => {
+    const logged = localStorage.getItem('isLoggedIn') === 'true';
+    const hasUser = localStorage.getItem('user');
+    if (logged && hasUser) return true;
+    if (logged === false) return false;
+    return null;
+  });
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsAuthenticated(isLoggedIn);
+    const logged = localStorage.getItem('isLoggedIn') === 'true';
+    const savedUser = localStorage.getItem('user');
+    
+    if (logged && savedUser) {
+      try {
+        if (!user) {
+          setUser(JSON.parse(savedUser));
+        }
+        setIsAuthenticated(true);
+      } catch (e) {
+        handleLogout();
+      }
+    } else {
+      setIsAuthenticated(false);
+    }
   }, []);
-
-  const [user, setUser] = useState<any>(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
 
   const handleLogin = (userData: any) => {
     setIsAuthenticated(true);
@@ -31,8 +54,10 @@ const App: React.FC = () => {
     localStorage.removeItem('user');
   };
 
+  console.log("App Render - Auth:", isAuthenticated, "User:", !!user);
+
   if (isAuthenticated === null) {
-    return <div className="h-screen w-screen flex items-center justify-center bg-slate-900 text-white">Carregando...</div>;
+    return <div className="h-screen w-screen flex items-center justify-center bg-slate-900 text-white">Carregando Portal RJZ Cyrela...</div>;
   }
 
   return (

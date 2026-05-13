@@ -14,7 +14,8 @@ const CrmConverter: React.FC<{ user: any }> = ({ user }) => {
     if (!xml.trim() || loading) return;
     setLoading(true);
     try {
-      const response = await axios.post(`http://localhost:8000/api/tools/crm-convert?email=${user.user.email}`, { xml });
+      const userEmail = user?.user?.email || '';
+      const response = await axios.post(`http://localhost:8000/api/tools/crm-convert?email=${userEmail}`, { xml });
       setSql(response.data.sql);
     } catch (err) {
       console.error("Erro ao converter XML", err);

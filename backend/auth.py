@@ -70,18 +70,33 @@ def get_user_tokens(email: str) -> dict:
         
         if response.data:
             res = response.data[0]
+            # Fallback to .env values if empty
+            host = res.get("databricks_host") or os.getenv("DATABRICKS_HOST", "")
+            token = decrypt_token(res.get("databricks_token") or "") or os.getenv("DATABRICKS_TOKEN", "")
+            space_id = res.get("genie_space_id") or os.getenv("GENIE_SPACE_ID", "")
+            
             return {
-                "host": res.get("databricks_host") or "", 
-                "token": decrypt_token(res.get("databricks_token") or ""), 
-                "space_id": res.get("genie_space_id") or "",
+                "host": host, 
+                "token": token, 
+                "space_id": space_id,
                 "ado_org": res.get("ado_org") or "cyrela-data-analytics", 
                 "ado_project": res.get("ado_project") or "Data Analytics", 
                 "ado_repo": res.get("ado_repo") or "lakehouse", 
                 "ado_pat": decrypt_token(res.get("ado_pat") or "")
             }
-    except Exception:
-        pass
-    return {"host": "", "token": "", "space_id": "", "ado_org": "", "ado_project": "", "ado_repo": "", "ado_pat": ""}
+    except Exception as e:
+        print(f"Error in get_user_tokens: {e}")
+    
+    # Global fallback if user not found or error
+    return {
+        "host": os.getenv("DATABRICKS_HOST", ""), 
+        "token": os.getenv("DATABRICKS_TOKEN", ""), 
+        "space_id": os.getenv("GENIE_SPACE_ID", ""),
+        "ado_org": "cyrela-data-analytics", 
+        "ado_project": "Data Analytics", 
+        "ado_repo": "lakehouse", 
+        "ado_pat": ""
+    }
 
 def update_user_tokens(email: str, host: str, token: str, space_id: str, ado_org: str, ado_proj: str, ado_repo: str, ado_pat: str):
     supabase = get_supabase()

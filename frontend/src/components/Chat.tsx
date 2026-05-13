@@ -32,7 +32,8 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
 
   const fetchSpaces = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${user.user.email}`);
+      const userEmail = user?.user?.email || '';
+      const res = await axios.get(`http://localhost:8000/api/genie/spaces?email=${userEmail}`);
       setSpaces(res.data);
       if (!selectedSpaceId && res.data.length > 0) {
         setSelectedSpaceId(res.data[0].id);
@@ -67,7 +68,8 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`http://localhost:8000/api/genie/chat?email=${user.user.email}`, {
+      const userEmail = user?.user?.email || '';
+      const response = await axios.post(`http://localhost:8000/api/genie/chat?email=${userEmail}`, {
         content: input,
         conversation_id: conversationId,
         space_id: selectedSpaceId
@@ -110,7 +112,7 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
           <p className="text-slate-500 text-lg">Pergunte qualquer coisa sobre os dados da RJZ Cyrela</p>
         </div>
         <div className="w-80">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Ambiente de Dados</label>
+          <label className="label-premium">Ambiente de Dados</label>
           <div className="relative">
             <select 
               value={selectedSpaceId}
