@@ -103,40 +103,48 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in">
-      <header className="mb-6 flex justify-between items-end">
+    <div className="flex flex-col h-[calc(100vh-10rem)] animate-slide-up space-y-6">
+      <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 font-outfit mb-2">Genie Chat</h1>
-          <p className="text-slate-500">Pergunte qualquer coisa sobre os dados da RJZ Cyrela</p>
+          <h1 className="text-5xl font-extrabold text-slate-900 font-outfit mb-2 tracking-tight text-gradient">Genie Chat</h1>
+          <p className="text-slate-500 text-lg">Pergunte qualquer coisa sobre os dados da RJZ Cyrela</p>
         </div>
-        <div className="w-64">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Selecionar Ambiente</label>
-          <select 
-            value={selectedSpaceId}
-            onChange={(e) => {
-              setSelectedSpaceId(e.target.value);
-              setConversationId(null);
-              setMessages([]);
-              sessionStorage.removeItem('conv_id');
-              sessionStorage.removeItem('chat_messages');
-            }}
-            className="input-field py-2 text-sm bg-white cursor-pointer"
-          >
-            {spaces.map(s => (
-              <option key={s.id} value={s.id}>{s.title}</option>
-            ))}
-          </select>
+        <div className="w-80">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Ambiente de Dados</label>
+          <div className="relative">
+            <select 
+              value={selectedSpaceId}
+              onChange={(e) => {
+                setSelectedSpaceId(e.target.value);
+                setConversationId(null);
+                setMessages([]);
+                sessionStorage.removeItem('conv_id');
+                sessionStorage.removeItem('chat_messages');
+              }}
+              className="input-field py-3.5 text-sm bg-white border-slate-200 shadow-sm appearance-none cursor-pointer"
+            >
+              {spaces.map(s => (
+                <option key={s.id} value={s.id}>{s.title}</option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <Database size={16} />
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="flex-1 glass rounded-3xl p-6 overflow-hidden flex flex-col border border-slate-200">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar">
+      <div className="flex-1 premium-card flex flex-col !p-0 overflow-hidden relative border-none shadow-2xl">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-8 p-10 custom-scrollbar">
           {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4">
-              <div className="bg-slate-50 p-6 rounded-full">
-                <MessageSquare className="h-12 w-12 text-slate-200" />
+            <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-8 opacity-50">
+              <div className="p-10 rounded-[3rem] bg-slate-50 border border-slate-100 shadow-inner">
+                <MessageSquare size={80} strokeWidth={1} />
               </div>
-              <p className="max-w-xs text-center">Inicie uma conversa. O Genie analisará o esquema das tabelas para você.</p>
+              <div className="text-center space-y-2">
+                <p className="font-bold text-sm uppercase tracking-widest">Inicie uma análise inteligente</p>
+                <p className="text-xs max-w-xs leading-relaxed">O Genie analisará o catálogo do Unity Catalog para responder suas perguntas de negócio.</p>
+              </div>
             </div>
           )}
 
@@ -144,45 +152,50 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
             {messages.map((msg, idx) => (
               <motion.div 
                 key={idx}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-6 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                  msg.role === 'user' ? 'bg-orange-500 text-white' : 'bg-blue-600 text-white'
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                  msg.role === 'user' ? 'bg-slate-900 text-white shadow-slate-200' : 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-blue-100'
                 }`}>
-                  {msg.role === 'user' ? <User size={20} /> : <Sparkles size={20} />}
+                  {msg.role === 'user' ? <User size={24} /> : <Sparkles size={24} />}
                 </div>
 
-                <div className={`max-w-[80%] space-y-4 ${msg.role === 'user' ? 'items-end' : ''}`}>
-                  <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === 'user' ? 'bg-orange-50 text-slate-800 rounded-tr-none' : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none shadow-sm'
+                <div className={`max-w-[75%] space-y-6 ${msg.role === 'user' ? 'items-end' : ''}`}>
+                  <div className={`p-6 rounded-[2rem] text-base leading-relaxed shadow-sm ${
+                    msg.role === 'user' ? 'bg-orange-50 text-slate-800 rounded-tr-none' : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
                   }`}>
                     {msg.text}
                   </div>
 
                   {msg.sql && (
-                    <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                      <div className="bg-slate-800 px-4 py-2 flex justify-between items-center">
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <Database size={14} />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">SQL Indentado</span>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="rounded-[2rem] overflow-hidden border border-slate-800 shadow-2xl bg-slate-950"
+                    >
+                      <div className="bg-slate-900/50 backdrop-blur-md px-6 py-4 flex justify-between items-center border-b border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Query SQL Sugerida</span>
                         </div>
                         <button 
                           onClick={() => copyToClipboard(msg.sql!, `sql-${idx}`)}
-                          className="text-slate-400 hover:text-white transition p-1"
+                          className="text-slate-400 hover:text-white transition-all flex items-center gap-2 group px-3 py-1.5 bg-slate-800 rounded-xl border border-slate-700"
                         >
                           {copiedId === `sql-${idx}` ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                          <span className="text-[9px] font-bold uppercase tracking-widest">{copiedId === `sql-${idx}` ? 'Copiado' : 'Copiar'}</span>
                         </button>
                       </div>
                       <SyntaxHighlighter 
                         language="sql" 
                         style={vscDarkPlus}
-                        customStyle={{ margin: 0, padding: '1rem', fontSize: '0.8rem' }}
+                        customStyle={{ margin: 0, padding: '2.5rem', fontSize: '0.85rem', lineHeight: '1.7', background: 'transparent' }}
                       >
                         {msg.sql}
                       </SyntaxHighlighter>
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               </motion.div>
@@ -190,35 +203,37 @@ const Chat: React.FC<{ user: any }> = ({ user }) => {
           </AnimatePresence>
           
           {loading && (
-            <div className="flex gap-4">
-              <div className="h-10 w-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
-                <Sparkles size={20} className="animate-pulse" />
+            <div className="flex gap-6">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-100">
+                <Sparkles size={24} className="animate-pulse" />
               </div>
-              <div className="bg-white border border-slate-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-75"></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-150"></div>
+              <div className="bg-white border border-slate-100 p-6 rounded-[2rem] rounded-tl-none shadow-sm flex items-center gap-3">
+                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce"></div>
+                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce delay-75"></div>
+                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-bounce delay-150"></div>
               </div>
             </div>
           )}
         </div>
 
-        <form onSubmit={handleSend} className="mt-6 relative">
-          <input 
-            type="text" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Digite sua pergunta aqui..."
-            className="input-field pr-14 py-4 text-base shadow-lg"
-          />
-          <button 
-            type="submit" 
-            disabled={loading || !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-orange-500 text-white rounded-xl flex items-center justify-center hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send size={18} />
-          </button>
-        </form>
+        <div className="p-8 bg-white border-t border-slate-50">
+          <form onSubmit={handleSend} className="relative group">
+            <input 
+              type="text" 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Descreva sua análise de dados aqui..."
+              className="input-field pr-20 py-5 text-lg shadow-2xl shadow-slate-100 border-slate-100 group-focus-within:border-orange-200"
+            />
+            <button 
+              type="submit" 
+              disabled={loading || !input.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-14 w-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-orange-500 transition-all shadow-xl shadow-slate-200 disabled:opacity-50 btn-premium"
+            >
+              <Send size={24} />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

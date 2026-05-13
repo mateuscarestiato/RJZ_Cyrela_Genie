@@ -11,6 +11,7 @@ import msal
 
 # Local imports
 from core.clients import GenieApiClient, AzureDevOpsClient, format_sql
+from core.tools import generate_dbt_jinja, lint_sql, map_legacy_columns, convert_crm_xml, generate_dbt_docs
 from auth import verify_login, get_user_tokens, update_user_tokens, generate_otp, verify_otp, user_exists, create_user
 
 load_dotenv(Path(__file__).parent.parent / ".env")
@@ -87,6 +88,21 @@ class PRRequest(BaseModel):
     yml_path: str
     yml_content: str
     comment: str
+
+class ToolRequest(BaseModel):
+    sql: str
+    alias: Optional[str] = "digite_o_alias_aqui"
+
+class MapperRequest(BaseModel):
+    columns: List[str]
+    target_table: Optional[str] = ""
+
+class XMLRequest(BaseModel):
+    xml: str
+
+class DocRequest(BaseModel):
+    sql: str
+    alias: str
 
 # ===== Supabase Auth Endpoints =====
 @app.post("/api/auth/login")
@@ -266,16 +282,86 @@ async def create_pr(email: str, req: PRRequest):
     
     # 1. Push changes
     devops.push_changes_git_cli(
-        req.branch_name, req.target_branch, 
+        req.source_branch, req.target_branch, 
         req.sql_path, req.sql_content, 
         req.yml_path, req.yml_content, 
         req.comment
     )
     
     # 2. Create PR
-    pr = devops.create_pull_request(req.branch_name, req.target_branch, req.title, req.description)
+    pr = devops.create_pull_request(req.source_branch, req.target_branch, req.title, req.description)
     
     return {"status": "success", "pr_link": pr.get("web_link"), "pr_id": pr.get("pullRequestId")}
+
+# ===== Developer Tools Endpoints =====
+@app.post("/api/tools/dbt-gen")
+async def dbt_gen(req: ToolRequest):
+    try:
+        return {"result": generate_dbt_jinja(req.sql, req.alias)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tools/lint")
+async def lint(req: ToolRequest):
+    try:
+        return lint_sql(req.sql)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tools/mapper")
+async def mapper(email: str, req: MapperRequest):
+    try:
+        tokens = get_user_tokens(email)
+        client = GenieApiClient(tokens["host"], tokens["token"], tokens["space_id"])
+        return map_legacy_columns(req.columns, req.target_table, client)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tools/crm-convert")
+async def crm_convert(email: str, req: XMLRequest):
+    try:
+        tokens = get_user_tokens(email)
+        client = GenieApiClient(tokens["host"], tokens["token"], tokens["space_id"])
+        
+        # Use Genie to translate XML to the current catalog context
+        prompt = f"""Converta este FetchXML do CRM para uma consulta SQL válida no Databricks, 
+usando as tabelas e colunas disponíveis no nosso catálogo:
+
+{req.xml}
+
+Retorne APENAS o código SQL formatado."""
+        
+        # Start a conversation for this translation
+        res = client.start_conversation(prompt)
+        conv_id = res.get("id")
+        msg_id = res.get("message_id") or res.get("id")
+        
+        # Wait for the result
+        final_msg = client.wait_for_message(conv_id, msg_id)
+        
+        # Extract SQL from the response
+        sql = ""
+        attachments = final_msg.get("attachments", [])
+        sql_att = next((a for a in attachments if "query" in a), None)
+        if sql_att:
+            sql = sql_att["query"]["query"]
+        else:
+            # Fallback to text content if no query attachment
+            sql = final_msg.get("text", {}).get("plain_text", "")
+            
+        return {"sql": format_sql(sql)}
+    except Exception as e:
+        print(f"Erro no crm_convert: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tools/docs-gen")
+async def docs_gen(email: str, req: DocRequest):
+    try:
+        tokens = get_user_tokens(email)
+        client = GenieApiClient(tokens["host"], tokens["token"], tokens["space_id"])
+        return {"yaml": generate_dbt_docs(req.sql, req.alias, client)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Static files
 STATIC_PATH = Path(__file__).parent / "static"

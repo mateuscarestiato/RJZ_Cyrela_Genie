@@ -37,113 +37,134 @@ const DevOpsHub: React.FC<{ user: any }> = ({ user }) => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-5xl mx-auto">
+    <div className="flex flex-col h-full animate-slide-up space-y-10 max-w-7xl mx-auto">
       <header>
-        <h1 className="text-4xl font-extrabold text-slate-900 font-outfit mb-2">DevOps & CI/CD Hub</h1>
-        <p className="text-slate-500">Automatize a criação de Pull Requests no Azure DevOps</p>
+        <h1 className="text-5xl font-extrabold text-slate-900 font-outfit mb-3 tracking-tight text-gradient">DevOps & CI/CD Hub</h1>
+        <p className="text-slate-500 text-lg">Automatize a criação de Pull Requests no Azure DevOps</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <motion.div className="glass card border border-slate-200" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <GitPullRequest className="h-5 w-5 text-green-500" />
-            Configuração da Branch e PR
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Branch de Origem</label>
-                <input 
-                  type="text" 
-                  value={formData.source_branch}
-                  onChange={e => setFormData({...formData, source_branch: e.target.value})}
-                  className="input-field text-sm"
-                  required
-                />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 flex-1">
+        {/* Configuration Column */}
+        <div className="lg:col-span-5 space-y-8">
+          <motion.div className="premium-card h-full" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <div className="flex items-center gap-4 mb-10">
+              <div className="h-14 w-14 rounded-2xl bg-green-500 flex items-center justify-center text-white shadow-xl shadow-green-100">
+                <GitPullRequest size={28} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Branch de Destino</label>
-                <input 
-                  type="text" 
-                  value={formData.target_branch}
-                  onChange={e => setFormData({...formData, target_branch: e.target.value})}
-                  className="input-field text-sm"
-                  required
-                />
+                <h2 className="text-xl font-bold text-slate-900 leading-none mb-1">Pipeline & Branch</h2>
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Azure DevOps Setup</span>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Título do PR</label>
-              <input 
-                type="text" 
-                value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                className="input-field text-sm"
-                required
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Branch de Origem</label>
+                  <input 
+                    type="text" 
+                    value={formData.source_branch}
+                    onChange={e => setFormData({...formData, source_branch: e.target.value})}
+                    className="input-field"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Branch de Destino</label>
+                  <input 
+                    type="text" 
+                    value={formData.target_branch}
+                    onChange={e => setFormData({...formData, target_branch: e.target.value})}
+                    className="input-field"
+                    required
+                  />
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Comentário do Commit</label>
-              <input 
-                type="text" 
-                value={formData.comment}
-                onChange={e => setFormData({...formData, comment: e.target.value})}
-                className="input-field text-sm"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Descrição</label>
-              <textarea 
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                className="input-field min-h-[100px] text-sm resize-none"
-              />
-            </div>
-
-            <button type="submit" disabled={loading} className="btn-primary w-full py-4 mt-6">
-              {loading ? 'Processando no Azure...' : <><GitPullRequest size={20} /> Criar Pull Request</>}
-            </button>
-          </form>
-        </motion.div>
-
-        <div className="space-y-6">
-          <motion.div className="glass card border border-slate-200" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <FileCode className="h-5 w-5 text-blue-500" />
-              Arquivos de Transformação
-            </h2>
-            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Caminho do Model SQL</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Título do Pull Request</label>
+                <input 
+                  type="text" 
+                  value={formData.title}
+                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Mensagem de Commit</label>
+                <input 
+                  type="text" 
+                  value={formData.comment}
+                  onChange={e => setFormData({...formData, comment: e.target.value})}
+                  className="input-field font-mono text-xs"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Descrição Detalhada</label>
+                <textarea 
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  className="input-field min-h-[120px] py-4 resize-none"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full py-5 bg-slate-900 text-white rounded-[1.25rem] font-bold flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 disabled:opacity-50 btn-premium"
+              >
+                {loading ? <Sparkles className="animate-spin h-6 w-6" /> : <GitPullRequest size={24} className="text-green-400" />}
+                {loading ? 'Sincronizando com Azure...' : 'Criar Pull Request'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+
+        {/* Content Column */}
+        <div className="lg:col-span-7 space-y-8">
+          <motion.div className="premium-card" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+            <div className="flex items-center gap-4 mb-10">
+              <div className="h-14 w-14 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-xl shadow-blue-100">
+                <FileCode size={28} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 leading-none mb-1">Manifestos de Código</h2>
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">dbt Models & YAML</span>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-1">
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">Caminho do Model SQL</label>
+                  <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">Automático</span>
+                </div>
                 <input 
                   type="text" 
                   value={formData.sql_path}
                   onChange={e => setFormData({...formData, sql_path: e.target.value})}
-                  className="input-field text-sm font-mono"
+                  className="input-field font-mono text-sm"
                   required
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">SQL Content</label>
                 <textarea 
                   value={formData.sql_content}
                   onChange={e => setFormData({...formData, sql_content: e.target.value})}
-                  className="input-field min-h-[120px] text-sm font-mono resize-none bg-slate-50"
+                  className="input-field min-h-[220px] font-mono text-xs py-5 bg-slate-950 text-slate-300 border-slate-800 focus:ring-blue-500/20"
                   placeholder="SELECT * FROM ..."
                   required
                 />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">YAML Documentation (Opcional)</label>
+
+              <div className="space-y-4">
+                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Documentação dbt (.yml)</label>
                 <textarea 
                   value={formData.yml_content}
                   onChange={e => setFormData({...formData, yml_content: e.target.value})}
-                  className="input-field min-h-[80px] text-sm font-mono resize-none bg-slate-50"
+                  className="input-field min-h-[140px] font-mono text-xs py-5 bg-slate-950 text-slate-300 border-slate-800 focus:ring-blue-500/20"
                   placeholder="models: ..."
                 />
               </div>
@@ -153,26 +174,36 @@ const DevOpsHub: React.FC<{ user: any }> = ({ user }) => {
           <AnimatePresence>
             {prResult && (
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-6 rounded-[28px] bg-green-50 border border-green-100 shadow-xl shadow-green-100/20"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="premium-card !bg-green-600 border-none shadow-2xl shadow-green-200 text-white relative overflow-hidden"
               >
-                <div className="flex items-center gap-3 text-green-700 mb-4">
-                  <CheckCircle2 className="h-6 w-6" />
-                  <h3 className="text-lg font-bold">Pull Request Criado!</h3>
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <GitPullRequest size={120} strokeWidth={1} />
                 </div>
-                <p className="text-sm text-green-600 mb-6 leading-relaxed">
-                  As alterações foram commitadas e o Pull Request <strong>#{prResult.id}</strong> já está aberto no Azure DevOps.
-                </p>
-                <a 
-                  href={prResult.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-green-700 transition shadow-lg shadow-green-600/30"
-                >
-                  <ExternalLink size={16} />
-                  Ver PR no Azure DevOps
-                </a>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+                      <CheckCircle2 className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Sucesso Absoluto!</h3>
+                      <p className="text-green-100 font-medium">Pull Request #{prResult.id} aberto.</p>
+                    </div>
+                  </div>
+                  <p className="text-green-50 mb-8 leading-relaxed max-w-md">
+                    As alterações foram commitadas e o processo de Code Review já pode ser iniciado no Azure DevOps.
+                  </p>
+                  <a 
+                    href={prResult.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-3 bg-white text-green-700 px-8 py-4 rounded-2xl font-bold hover:bg-green-50 transition-all shadow-xl shadow-green-800/20"
+                  >
+                    <ExternalLink size={20} />
+                    Ver no Azure DevOps
+                  </a>
+                </div>
               </motion.div>
             )}
 
@@ -180,12 +211,14 @@ const DevOpsHub: React.FC<{ user: any }> = ({ user }) => {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-6 rounded-[28px] bg-red-50 border border-red-100 flex items-start gap-4"
+                className="premium-card !bg-red-50 border-red-100 flex items-start gap-6 p-8"
               >
-                <AlertCircle className="h-6 w-6 text-red-500 shrink-0" />
+                <div className="h-12 w-12 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
                 <div>
-                  <h3 className="text-sm font-bold text-red-800 mb-1">Falha na Automação</h3>
-                  <p className="text-xs text-red-600">{error}</p>
+                  <h3 className="text-lg font-bold text-red-900 mb-2 leading-none">Falha na Automação</h3>
+                  <p className="text-sm text-red-600/80 leading-relaxed font-medium">{error}</p>
                 </div>
               </motion.div>
             )}
